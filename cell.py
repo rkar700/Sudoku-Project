@@ -30,7 +30,7 @@ class Cell:
         if self.value != 0:
             text=font.render(self.value, True, (0,0,0))
             self.screen.blit(text, (x + (cell_size//2 - text.get_width()//2), y + (cell_size//2 - text.get_height()//2)))
-        elif:
+        elif self.sketched_value != 0:
             small_font = pygame.font.SysFont("comicsans", 20)
             text = small_font.render(str(self.sketched_value), True, (128, 128, 128))
             self.screen.blit(text, (x + 5, y + 5))
