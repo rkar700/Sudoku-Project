@@ -107,12 +107,12 @@ def run_game():
                 pygame.quit()
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 x, y = event.pos
-                if 50 <= x <= 220 and 650 <= y <= 680:
+                if 30 <= x <= 200 and 650 <= y <= 680:
                     user_board = [row[:] for row in board]
                     locked_cells = original_cells[:]
-                elif 250 <= x <= 375 and 650 <= y <= 680:
+                elif 200 <= x <= 375 and 650 <= y <= 680:
                     run_game()
-                elif 450 <= x <= 520 and 650 <= y <= 680:
+                elif 400 <= x <= 470 and 650 <= y <= 680:
                     pygame.quit()
                 elif y < SCREEN_WIDTH:
                     selected_cell = (y // CELL_WIDTH, x // CELL_WIDTH)
