@@ -1,17 +1,17 @@
 import pygame
 from sudoku_generator import SudokuGenerator
 
-# Setup
+# Initialize Pygame
 pygame.init()
 
-# Display and Fonts
+# Screen Setup
 SCREEN_WIDTH, SCREEN_HEIGHT = 540, 700
 ROWS, COLS = 9, 9
 CELL_WIDTH = SCREEN_WIDTH // COLS
 BIG_FONT = pygame.font.SysFont("comicsans", 40)
-SMALLER_FONT = pygame.font.SysFont("comicsans", 25)
+SMALL_FONT = pygame.font.SysFont("comicsans", 25)
 
-# Palette
+# Colors
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 GRAY = (200, 200, 200)
@@ -19,54 +19,52 @@ BLUE = (100, 149, 237)
 RED = (255, 0, 0)
 CRIMSON = (220, 20, 60)
 
-# Board Logic
+# Create the board using the generator
 def create_board(size, blanks):
     generator = SudokuGenerator(size, blanks)
     generator.fill_values()
     generator.remove_cells()
     return generator.get_board()
 
-# Draw Gridlines
+# Draw the grid
 def render_grid(surface):
     for i in range(ROWS + 1):
         thickness = 3 if i % 3 == 0 else 1
         pygame.draw.line(surface, BLACK, (0, i * CELL_WIDTH), (SCREEN_WIDTH, i * CELL_WIDTH), thickness)
         pygame.draw.line(surface, BLACK, (i * CELL_WIDTH, 0), (i * CELL_WIDTH, SCREEN_WIDTH), thickness)
 
-# Render Numbers
+# Draw the numbers onto the grid
 def render_numbers(surface, board_state, original_positions, user_entries):
     surface.fill(WHITE)
     render_grid(surface)
-
-    for row_idx, row in range(board_state):
-        for col_idx, value in range(row):
-            if value:
-                cell_pos = (col_idx * CELL_WIDTH + 15, row_idx * CELL_WIDTH + 10)
-                if (row_idx, col_idx) in original_positions:
+    for row in range(ROWS):
+        for col in range(COLS):
+            value = board_state[row][col]
+            if value != 0:
+                pos = (col * CELL_WIDTH + 15, row * CELL_WIDTH + 10)
+                if (row, col) in original_positions:
                     text = BIG_FONT.render(str(value), True, BLUE)
-                elif (row_idx, col_idx) in user_entries:
+                elif (row, col) in user_entries:
                     text = BIG_FONT.render(str(value), True, BLACK)
                 else:
-                    text = SMALLER_FONT.render(str(value), True, GRAY)
-                surface.blit(text, cell_pos)
+                    text = SMALL_FONT.render(str(value), True, GRAY)
+                surface.blit(text, pos)
 
-# Win Condition Checker
+# Check win condition
 def check_win_condition(board):
     def is_valid(group):
         return sorted(group) == list(range(1, 10))
-
     for i in range(9):
         if not is_valid(board[i]) or not is_valid([board[j][i] for j in range(9)]):
             return False
-
-    for r_base in (0, 3, 6):
-        for c_base in (0, 3, 6):
-            block = [board[r][c] for r in range(r_base, r_base + 3) for c in range(c_base, c_base + 3)]
+    for r in range(0, 9, 3):
+        for c in range(0, 9, 3):
+            block = [board[r+i][c+j] for i in range(3) for j in range(3)]
             if not is_valid(block):
                 return False
     return True
 
-# Game Loop
+# Main game loop
 def run_game():
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
     pygame.display.set_caption("Sudoku Game")
@@ -101,6 +99,7 @@ def run_game():
     user_board = [row[:] for row in board]
     selected_cell = None
     game_active = True
+    win = False
 
     while game_active:
         for event in pygame.event.get():
@@ -122,7 +121,7 @@ def run_game():
                 if (r, c) not in original_cells:
                     if pygame.K_1 <= event.key <= pygame.K_9:
                         user_board[r][c] = event.key - pygame.K_0
-                    elif event.key == pygame.K_RETURN and (r, c) not in locked_cells:
+                    elif event.key == pygame.K_RETURN:
                         locked_cells.append((r, c))
                     elif event.key in [pygame.K_BACKSPACE, pygame.K_DELETE]:
                         user_board[r][c] = 0
@@ -135,16 +134,16 @@ def run_game():
             r, c = selected_cell
             pygame.draw.rect(screen, CRIMSON, (c * CELL_WIDTH, r * CELL_WIDTH, CELL_WIDTH, CELL_WIDTH), 3)
 
-        screen.blit(BIG_FONT.render("RESET", True, BLACK, CRIMSON), (50, 650))
-        screen.blit(BIG_FONT.render("RESTART", True, BLACK, CRIMSON), (250, 650))
-        screen.blit(BIG_FONT.render("EXIT", True, BLACK, CRIMSON), (450, 650))
+        screen.blit(BIG_FONT.render("RESET", True, BLACK, CRIMSON), (30, 650))
+        screen.blit(BIG_FONT.render("RESTART", True, BLACK, CRIMSON), (200, 650))
+        screen.blit(BIG_FONT.render("EXIT", True, BLACK, CRIMSON), (400, 650))
 
         pygame.display.flip()
 
-        if len(locked_cells) == 81:
-            pygame.time.delay(1000)
+        if all(user_board[r][c] != 0 for r in range(9) for c in range(9)):
+            if check_win_condition(user_board):
+                win = True
             game_active = False
-            win = check_win_condition(user_board)
 
         clock.tick(30)
 
@@ -172,5 +171,3 @@ def run_game():
 
 if __name__ == "__main__":
     run_game()
-
-#push
